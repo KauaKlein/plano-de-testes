@@ -10,36 +10,39 @@ export const generatePDF = async () => {
       scale: 2,
       logging: false,
       backgroundColor: '#ffffff',
+      useCORS: true,
+      allowTaint: true,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
     });
 
-    const imgData = canvas.toDataURL('image/png');
+    const imgData = canvas.toDataURL('image/png', 1.0);
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageHeight = pdf.internal.pageSize.getHeight();
     const pageWidth = pdf.internal.pageSize.getWidth();
 
-    let yPosition = 0;
+    const imgWidth = pageWidth;
     const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-    let pages = Math.ceil(imgHeight / pageHeight);
+    let heightLeft = imgHeight;
+    let position = 0;
 
-    for (let i = 0; i < pages; i++) {
-      if (i > 0) {
-        pdf.addPage();
-      }
-      pdf.addImage(
-        imgData,
-        'PNG',
-        0,
-        yPosition,
-        pageWidth,
-        imgHeight,
-      );
-      yPosition -= pageHeight;
+    // Adiciona primeira página
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // Adiciona páginas adicionais se necessário
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
     }
 
     pdf.save('plano-de-testes-gerar-matricula.pdf');
   } catch (error) {
     console.error('Erro ao gerar PDF:', error);
+    alert('Erro ao gerar PDF. Tente novamente.');
   }
 };
 
