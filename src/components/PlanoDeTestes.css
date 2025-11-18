@@ -21,62 +21,129 @@
 
 /* HEADER SIMPLES */
 .simple-header {
-  padding: 20px;
-  border-bottom: 3px solid #1abc9c;
-  margin-bottom: 25px;
+  padding: 25px;
+  border-bottom: 3px solid #00bfa5;
+  margin-bottom: 30px;
   background: #ffffff;
 }
 
 .doc-title {
-  font-size: 24px;
+  font-size: 28px;
   color: #000000;
-  margin: 0 0 10px 0;
+  margin: 0 0 20px 0;
   font-weight: bold;
+  text-align: center;
 }
 
-.doc-info {
+.doc-meta {
   display: flex;
-  gap: 20px;
-  font-size: 13px;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.doc-meta p {
+  margin: 0;
+  font-size: 14px;
   color: #666;
+}
+
+.doc-date {
+  font-weight: 500;
+}
+
+.doc-total {
+  font-weight: 500;
+  color: #00bfa5;
+}
+
+.doc-funcionalidade,
+.doc-sistema,
+.doc-tipo {
+  font-size: 13px;
+  color: #555;
+}
+
+/* SEÇÕES ADICIONAIS */
+.section-box {
+  margin-bottom: 25px;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 5px solid;
+}
+
+.section-box.precondicoes {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.section-box.dados-teste {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000000;
+  margin: 0 0 15px 0;
+}
+
+.section-content {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #333;
+}
+
+.section-content p {
+  margin: 5px 0;
+  color: #333;
 }
 
 /* CRITÉRIOS SIMPLIFICADOS */
 .test-cases {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .ca-item {
   display: flex;
-  gap: 15px;
-  padding: 15px;
+  gap: 20px;
+  padding: 20px;
   background: #ffffff;
-  border-left: 4px solid #1abc9c;
-  border-radius: 8px;
+  border-left: 5px solid #00bfa5;
+  border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .ca-number {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  color: #1abc9c;
-  min-width: 50px;
+  color: #00bfa5;
+  min-width: 60px;
+  padding-top: 2px;
 }
 
-.ca-content h3 {
-  font-size: 16px;
+.ca-content {
+  flex: 1;
+}
+
+.ca-title {
+  font-size: 17px;
   font-weight: bold;
   color: #000000;
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
 }
 
-.ca-content p {
+.ca-description {
   font-size: 14px;
   color: #333;
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.7;
+  text-align: justify;
 }
 
 @media print {

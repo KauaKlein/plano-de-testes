@@ -39,7 +39,7 @@ export const generatePDF = async () => {
       heightLeft -= pageHeight;
     }
 
-    pdf.save('plano-de-testes-gerar-matricula.pdf');
+    pdf.save('SRT Plano de Testes.pdf');
   } catch (error) {
     console.error('Erro ao gerar PDF:', error);
     alert('Erro ao gerar PDF. Tente novamente.');
