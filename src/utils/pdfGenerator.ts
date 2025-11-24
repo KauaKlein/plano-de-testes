@@ -7,16 +7,16 @@ export const generatePDF = async () => {
 
   try {
     const canvas = await html2canvas(element, {
-      scale: 2,
+      scale: 1.5,
       logging: false,
       backgroundColor: '#ffffff',
       useCORS: true,
-      allowTaint: true,
-      windowWidth: element.scrollWidth,
+      allowTaint: false,
+      windowWidth: 1200,
       windowHeight: element.scrollHeight,
     });
 
-    const imgData = canvas.toDataURL('image/png', 1.0);
+    const imgData = canvas.toDataURL('image/jpeg', 0.85);
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageHeight = pdf.internal.pageSize.getHeight();
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -27,15 +27,13 @@ export const generatePDF = async () => {
     let heightLeft = imgHeight;
     let position = 0;
 
-    // Adiciona primeira página
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
     heightLeft -= pageHeight;
 
-    // Adiciona páginas adicionais se necessário
     while (heightLeft > 0) {
       position = heightLeft - imgHeight;
       pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
       heightLeft -= pageHeight;
     }
 
