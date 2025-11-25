@@ -137,7 +137,7 @@ const PDFViewer = () => {
           <div className="button-group">
             <button
               onClick={handleVisualizeComIA}
-              className="btn-primary btn-ia"
+              className="btn-primary btn-success"
               disabled={!caInput.trim() || !titulo.trim() || isLoadingIA}
             >
               {isLoadingIA ? ' Processando com IA...' : ' Gerar Plano de Testes'}
