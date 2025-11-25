@@ -79,7 +79,7 @@ const PlanoDeTestes = () => {
   };
 
   return (
-    <div id="pdf-content" className="plano-container">
+    <div className="plano-container">
       {/* CAPA */}
       <div className="cover-page page-break">
         <div className="cover-content">

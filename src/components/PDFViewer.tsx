@@ -1,5 +1,4 @@
 ﻿import { useState } from 'react';
-import { generatePDF } from '../utils/pdfGenerator';
 import { generateDOCX } from '../utils/docxGenerator';
 import { gerarPlanoComIA } from '../utils/geminiService';
 import './PDFViewer.css';
@@ -58,15 +57,6 @@ const PDFViewer = () => {
       setError(`Erro ao processar: ${errorMessage}. Verifique o console para mais detalhes.`);
     } finally {
       setIsLoadingIA(false);
-    }
-  };
-
-  const handleGeneratePDF = async () => {
-    setIsGenerating(true);
-    try {
-      await generatePDF();
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -177,18 +167,11 @@ const PDFViewer = () => {
         <h1> {titulo}</h1>
         <div className="toolbar-buttons">
           <button
-            onClick={handleGeneratePDF}
-            disabled={isGenerating}
-            className="btn-generate"
-          >
-            {isGenerating ? 'Gerando...' : '📄 PDF'}
-          </button>
-          <button
             onClick={handleGenerateDOCX}
             disabled={isGenerating}
             className="btn-generate"
           >
-            {isGenerating ? 'Gerando...' : '📝 DOCX'}
+            {isGenerating ? 'Gerando...' : '📝 Baixar DOCX'}
           </button>
           <button
             onClick={handleReset}

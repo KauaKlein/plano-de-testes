@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = "AIzaSyAg9qrCTvYYUSibSaxqBvdyEHjm7t20JZU";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const GEMINI_MODEL = "gemini-2.5-flash";
 
 interface GeminiResponse {
