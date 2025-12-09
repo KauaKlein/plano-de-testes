@@ -9,7 +9,7 @@ interface CAData {
 
 export async function generateDOCX(
   titulo: string,
-  tipoTeste: string,
+  _tipoTeste: string,
   preCondicoes: string,
   cas: CAData[]
 ) {
