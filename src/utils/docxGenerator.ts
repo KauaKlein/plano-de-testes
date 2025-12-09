@@ -31,7 +31,6 @@ export async function generateDOCX(
         new TextRun({
           text: `Data: ${new Date().toLocaleDateString('pt-BR')} | Total: ${cas.length} CAs`,
         }),
-        ...(tipoTeste ? [new TextRun({ text: ` | ${tipoTeste}` })] : []),
       ],
       alignment: AlignmentType.CENTER,
       spacing: { after: 400 },
@@ -102,7 +101,7 @@ export async function generateDOCX(
             text: `${ca.id} - ${ca.title}`,
             bold: true,
             size: 28,
-            color: '00BFA5',
+            color: '000000',
           }),
         ],
         spacing: { before: 300, after: 200 },
@@ -118,7 +117,13 @@ export async function generateDOCX(
       passos.forEach((passo) => {
         children.push(
           new Paragraph({
-            text: passo.trim(),
+            children: [
+              new TextRun({
+                text: passo.trim(),
+                bold: false,
+                color: '000000',
+              }),
+            ],
             spacing: { after: 200 },
           })
         );
@@ -127,7 +132,13 @@ export async function generateDOCX(
       // Descrição sem passos numerados
       children.push(
         new Paragraph({
-          text: ca.descricao,
+          children: [
+            new TextRun({
+              text: ca.descricao,
+              bold: false,
+              color: '000000',
+            }),
+          ],
           spacing: { after: 300 },
         })
       );

@@ -11,7 +11,8 @@
   justify-content: center;
   align-items: center;
   padding: 60px 40px;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #e8f5f3 0%, #f0f9ff 100%);
+  min-height: 100vh;
 }
 
 .input-header {
@@ -19,30 +20,45 @@
   margin-bottom: 50px;
 }
 
+.header-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .input-header h1 {
-  font-size: 28px;
+  font-size: 32px;
   color: #00bfa5;
   margin: 0 0 15px 0;
   font-weight: 800;
   letter-spacing: 1.5px;
+  text-shadow: 0 2px 4px rgba(0, 191, 165, 0.1);
 }
 
-.input-header p {
-  font-size: 17px;
-  color: #000000;
+.header-subtitle {
+  font-size: 16px;
+  color: #64748b;
   margin: 0;
   font-weight: 400;
-  letter-spacing: 0.5px;
 }
 
 .input-form {
   background: #ffffff;
   padding: 50px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   max-width: 1200px;
   width: 100%;
-  border: 1px solid #e0e0e0;
+  border: none;
 }
 
 .form-group {
@@ -72,24 +88,32 @@
 }
 
 .label-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  color: #333333;
+  color: #1f2937;
   margin-bottom: 8px;
   text-transform: none;
   letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .input-field,
 .textarea-field {
-  padding: 12px 14px;
-  border: 1px solid #d0d0d0;
-  border-radius: 4px;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   background: #ffffff;
   color: #333333;
+}
+
+.input-field:hover,
+.textarea-field:hover {
+  border-color: #00bfa5;
 }
 
 select.input-field {
@@ -104,32 +128,23 @@ select.input-field {
 .input-field::placeholder,
 .textarea-field::placeholder {
   color: #999;
+  font-weight: 600;
 }
 
 .input-field:focus,
 .textarea-field:focus {
   outline: none;
   border-color: #00bfa5;
-  box-shadow: 0 0 0 2px rgba(0, 191, 165, 0.1);
-}
-
-.input-field::placeholder,
-.textarea-field::placeholder {
-  color: #333333;
-}
-
-.input-field:focus,
-.textarea-field:focus {
-  outline: none;
-  border-color: #1abc9c;
-  box-shadow: 0 0 0 4px rgba(26, 188, 156, 0.15), inset 0 0 0 1px rgba(26, 188, 156, 0.1);
-  background: #f8fafb;
+  box-shadow: 0 0 0 4px rgba(0, 191, 165, 0.1);
+  background: #ffffff;
+  transform: translateY(-1px);
 }
 
 .textarea-field {
   resize: vertical;
-  min-height: 200px;
-  font-family: 'Courier New', monospace;
+  min-height: 250px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
 }
 
 .help-text {
@@ -176,12 +191,30 @@ select.input-field {
   background: #22c55e;
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+  font-size: 16px;
+  padding: 16px 32px;
 }
 
 .btn-primary.btn-ia:hover:not(:disabled) {
   background: #16a34a;
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-primary.btn-success {
+  background: #22c55e;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+  font-size: 16px;
+  padding: 16px 32px;
+}
+
+.btn-primary.btn-success:hover:not(:disabled) {
+  background: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.5);
+  transform: translateY(-2px);
 }
 
 .btn-primary:disabled {
@@ -469,8 +502,8 @@ select.input-field {
 
 .ca-item h3 {
   font-size: 18px;
-  font-weight: 700;
-  color: #00bfa5;
+  font-weight: 900;
+  color: #000000;
   margin: 0 0 15px 0;
   line-height: 1.4;
   word-break: normal;
@@ -481,7 +514,8 @@ select.input-field {
   margin: 0;
   font-size: 15px;
   line-height: 1.8;
-  color: #444;
+  color: #000000;
+  font-weight: 700;
   text-align: left;
   hyphens: none;
   word-break: normal;

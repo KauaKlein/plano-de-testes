@@ -83,45 +83,29 @@ const PDFViewer = () => {
     return (
       <div className="pdf-viewer input-view">
         <div className="input-header">
+          <div className="header-icon">
+            📋
+          </div>
           <h1>Gerador de Plano de Testes</h1>
+          <p className="header-subtitle">Crie planos de teste profissionais com IA</p>
         </div>
 
         <div className="input-form">
           <div className="form-group">
             <label>
-              <span className="label-text">Título do Plano *</span>
+              <span className="label-text">📝 Título do Plano *</span>
               <input
                 type="text"
                 value={titulo}
                 onChange={(e) => setTitulo(e.target.value)}
-                placeholder="Ex: Plano de Testes - Gerar Matrícula"
                 className="input-field"
               />
             </label>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>
-                <span className="label-text">Tipo de Teste</span>
-                <select
-                  value={tipoTeste}
-                  onChange={(e) => setTipoTeste(e.target.value)}
-                  className="input-field"
-                >
-                  <option value="Integração">Integração</option>
-                  <option value="Barramento">Barramento</option>
-                  <option value="Unidade">Unidade</option>
-                  <option value="CRUD">CRUD</option>
-                  <option value="Validação">Validação</option>
-                </select>
-              </label>
-            </div>
-          </div>
-
           <div className="form-group">
             <label>
-              <span className="label-text">Critérios de Aceite (CAs) *</span>
+              <span className="label-text">✅ Critérios de Aceite (CAs) *</span>
               <textarea
                 value={caInput}
                 onChange={(e) => setCAInput(e.target.value)}
@@ -140,7 +124,7 @@ const PDFViewer = () => {
               className="btn-primary btn-success"
               disabled={!caInput.trim() || !titulo.trim() || isLoadingIA}
             >
-              {isLoadingIA ? ' Processando com IA...' : ' Gerar Plano de Testes'}
+              {isLoadingIA ? '⏳ Processando com IA...' : 'Gerar Plano de Testes'}
             </button>
             <button
               onClick={() => {
@@ -153,7 +137,7 @@ const PDFViewer = () => {
               className="btn-tertiary"
               disabled={isLoadingIA}
             >
-               Limpar
+               Limpar 🗑️
             </button>
           </div>
         </div>
@@ -200,12 +184,12 @@ interface PreviewPlanoProps {
   cas: CAData[];
 }
 
-const PreviewPlano = ({ titulo, tipoTeste, preCondicoes, cas }: PreviewPlanoProps) => {
+const PreviewPlano = ({ titulo, preCondicoes, cas }: PreviewPlanoProps) => {
   return (
     <div className="plano-container">
       <div className="simple-header">
         <h1>{titulo}</h1>
-        <p>Data: {new Date().toLocaleDateString('pt-BR')} | Total: {cas.length} CAs{tipoTeste && ` | ${tipoTeste}`}</p>
+        <p>Data: {new Date().toLocaleDateString('pt-BR')} | Total: {cas.length} CAs</p>
       </div>
 
       {preCondicoes && (

@@ -15,93 +15,435 @@ interface GeminiResponse {
 }
 
 const SRT_CONTEXT = `
-# CONTEXTO DO SISTEMA SRT
+# CONTEXTO COMPLETO DO SISTEMA SRT - SISTEMA DE REGISTRO DE TERCEIROS
 
-## Sistema SRT (Sistema de Registro de Terceiros)
-Sistema que gerencia terceiros (prestadores de serviço) da Oi, controlando:
-- Terceiros (nacionais com CPF ou estrangeiros sem CPF)
-- Contratos vinculando terceiros a contratantes
-- Fornecedores (empresas que prestam serviço)
-- Contratantes (empresas do grupo Oi)
-- Estruturas departamentais e Filiais (por UF)
-- Situações funcionais (Ativo, Inativo, etc.)
+## 🎯 GLOSSÁRIO - Siglas e Abreviações
 
-## Integrações e Barramento
-- **AUT**: Sistema de autenticação/matrícula
-- **NDS**: Sistema de dados
-- **CURE**: Sistema complementar
-- Comunicação assíncrona via barramento
-- Retornos podem ser: OK, ERRO (com códigos parametrizados)
-- Ações de erro: Reenviar Evento, Efetivar Operação, Manual, Sem Ação
+### Sistema Principal
+- **SRT**: Sistema de Registro de Terceiros (plataforma de gestão empresarial)
+- **TR**: Código de identificação do terceiro (ex: TR000666)
+- **CPF**: Cadastro de Pessoa Física
+- **CNPJ**: Cadastro Nacional da Pessoa Jurídica
 
-## Regras de Negócio Detalhadas
+### Entidades de Dados Principais
+- **TER**: Terceiro (pessoas que prestam serviços)
+- **CTT**: Contrato (vínculo entre terceiros, fornecedores e contratantes)
+- **EMP**: Empresa/Contratante
+- **FRN**: Fornecedor (empresas que prestam serviço)
+- **ETT**: Estruturas (hierarquia departamental)
+- **FIL**: Filiais (unidades de negócio por UF)
+- **SFT**: Situação Funcional do Terceiro
+- **USU**: Usuário do sistema
+- **PFL**: Perfil de usuário
+- **PER**: Permissões
 
-### Terceiros
-- Podem ser nacionais (com CPF) ou estrangeiros (sem CPF)
-- Sempre devem ter uma situação funcional válida
-- Relacionamento obrigatório com: prédio, cargo, prestação de serviço, tipo de matrícula
-- **TODO TERCEIRO DEVE TER AO MENOS UM CONTRATO**
-- **TODOS OS CONTRATOS DE UM TERCEIRO SÃO DO MESMO FORNECEDOR** (mas podem ser de contratantes diferentes)
-- Para instanciar objetos, sempre usar Factory pattern para garantir polimorfismo correto
-- Validações: CPF/CNPJ válidos para nacionais, datas específicas (datetime: YYYYMMDDHHMMSS, date: YYYY-MM-DD)
-- Herança: cls_terceiroBase → cls_terceiroEstrangeiro
+### Tabelas de Domínio
+- **ACO**: tb_srt_acao
+- **CGO**: tb_srt_cargo
+- **CEX**: tb_srt_comunicacao_externa
+- **LOG**: tb_srt_logs
+- **NOT**: tb_srt_notificacao
+- **TAR**: tb_srt_tarefas
+- **BAI**: tb_srt_bairro
+- **END**: tb_srt_enderecos
+- **PRE**: tb_srt_predios
+- **MUN**: tb_srt_municipios
 
-### Contratos
-- Vinculam terceiros a contratantes
-- **TODO CONTRATO DEVE TER UM CONTRATANTE**
-- **TODO CONTRATO DEVE TER UM FORNECEDOR**
-- Possuem aprovações e tipos de acesso
-- Relacionados a filiais e estruturas organizacionais
-- A estrutura do terceiro É a estrutura do contrato
+### Padrões de Código Backend
+- **cls_**: Prefixo para classes concretas
+- **int_**: Prefixo para interfaces
+- **dto_**: Prefixo para Data Transfer Objects
+- **uc_**: Prefixo para Use Cases
 
-### Situações Funcionais
-- Controlam o estado atual do terceiro no sistema
-- Devem ter data/hora de referência, início e fim
-- Tipos: Atividade Normal, Inativo, etc.
-- Datas em formatos específicos (datetime: YYYYMMDDHHMMSS, date: YYYY-MM-DD)
+## 📋 ENTIDADES E RELACIONAMENTOS
 
-### Fornecedores
-- Representam as empresas para as quais os terceiros trabalham
-- Prestam serviços ao contratante
+### Terceiro (TER)
+**Definição**: Pessoa física ou jurídica que presta serviços
 
-### Contratantes
-- Representam empresas do grupo Oi que contratam os serviços
+**Tipos**:
+- **Nacional**: Possui CPF, é cidadão brasileiro
+- **Estrangeiro**: Sem CPF, residente estrangeiro
 
-### Filial
-- Representação de uma unidade de negócio por UF (Estado)
+**Características Obrigatórias**:
+- Sempre vinculado a EXATAMENTE UM FORNECEDOR
+- Pode ter MÚLTIPLOS CONTRATOS com diferentes contratantes
+- TODOS os contratos do mesmo terceiro devem ser do mesmo fornecedor
+- Deve ter uma SITUAÇÃO FUNCIONAL ativa
+- Relacionamento obrigatório com: Prédio, Cargo, Prestação de Serviço, Tipo de Matrícula
 
-### Estruturas Departamentais
+**Validações**:
+- CPF/CNPJ válidos e únicos
+- Datas em formatos específicos: datetime (YYYYMMDDHHMMSS), date (YYYY-MM-DD)
+- Herança: cls_terceiroBase → cls_terceiroNacional/cls_terceiroEstrangeiro
+- Criação obrigatória via Factory: cls_factory_terceiros
+
+### Contrato (CTT)
+**Definição**: Vínculo entre Terceiro, Fornecedor e Contratante
+
+**Características Obrigatórias**:
+- DEVE TER um Contratante (empresa do grupo Oi)
+- DEVE TER um Fornecedor (empresa prestadora)
+- DEVE TER um ou mais Terceiros
+- Estrutura do Terceiro É a Estrutura do Contrato
+- Relacionado a Filiais e Estruturas Organizacionais
+- Possui aprovações e tipos de acesso
+
+**Estados Possíveis**:
+- Em Aprovação: Aguardando validação
+- Aprovado: Ativo e operacional
+- Prorrogado: Período estendido
+- Encerrado: Finalizado
+
+### Situação Funcional (SFT)
+**Definição**: Estado temporal do terceiro no sistema
+
+**Tipos**:
+- **Atividade Normal**: Terceiro ativo e operacional
+- **Inativo**: Terceiro desabilitado
+- **Bloqueado**: Terceiro impedido temporariamente
+- **Em Licença**: Terceiro em afastamento
+
+**Requisitos**:
+- Data/Hora de referência (YYYYMMDDHHMMSS)
+- Data de início (YYYY-MM-DD)
+- Data de fim (YYYY-MM-DD)
+- Motivo da situação
+- Histórico temporal obrigatório
+
+### Contratante
+**Definição**: Empresa do grupo Oi que contrata serviços
+
+**Responsabilidades**:
+- Aprovar terceiros e contratos
+- Gerenciar estruturas organizacionais
+- Controlar acesso de usuários
+
+### Fornecedor
+**Definição**: Empresa que presta serviços aos contratantes
+
+**Responsabilidades**:
+- Fornecer terceiros qualificados
+- Gerenciar contratos com contratantes
+- Responsável pela estrutura dos terceiros
+
+### Estrutura Organizacional (ETT)
+**Definição**: Hierarquia departamental da organização
+
+**Características**:
 - Representação de hierarquia departamental
-- Associadas a filiais para determinar a estrutura por UF
-- **Entidades associadas a estruturas são visíveis APENAS para usuários do mesmo nível departamental ou inferior**
+- Associada a Filiais para determinar estrutura por UF
+- Entidades associadas são visíveis APENAS para usuários do mesmo nível ou inferior
+- Aplicável a terceiros e contratos (estrutura do terceiro = estrutura do contrato)
 
-## Visibilidade no Sistema
-**Conceito**: Determina quais registros o usuário logado pode visualizar
+### Filial (FIL)
+**Definição**: Unidade de negócio por Estado (UF)
 
-### Tipos de Usuários:
-1. **Usuários Contratantes**:
-   - Associados a estruturas e filiais (filial pode ser opcional)
-   - Visibilidade: todas entidades da mesma estrutura E filial
-   - Se não houver filial: considerar apenas estrutura
-   - Se não houver estrutura nem filial: visualiza TUDO
+**Características**:
+- Uma por UF (Unidade Federativa)
+- Relacionada a Estruturas para organização por região
+- Determina jurisdição de contratantes e terceiros
 
-2. **Usuários Fornecedores**:
-   - Estrutura determinada pelos contratos associados ao fornecedor
-   - Deve estar associado ao contrato (pode haver múltiplos usuários por fornecedor)
-   - Cada usuário pode ter acesso a contratos diferentes de forma EXCLUSIVA
-   - Visibilidade: apenas terceiros/entidades dos contratos na sua hierarquia
+## 🔐 SISTEMA DE VISIBILIDADE - Regras de Acesso
 
-### Regra de Hierarquia:
-- Aplica-se a TODAS as entidades associadas aos contratos
-- Exemplo: usuário só acessa terceiros dos contratos na sua hierarquia
-- **Para todos os efeitos: a estrutura do terceiro É a estrutura do contrato**
+### Conceito Fundamental
+Determina quais registros um usuário logado pode visualizar baseado em:
+- **Tipo de Vinculação**: Contratante (C) vs Fornecedor (F)
+- **Estrutura Organizacional**: Nível hierárquico
+- **Filial**: Unidade de negócio por UF
+- **Contratos**: Específicos (para fornecedores)
 
-## Tipos de Teste Comuns
-- **Integração**: Teste de comunicação entre sistemas
-- **Barramento**: Retorno de eventos assíncronos
-- **CRUD**: Criar, Ler, Atualizar, Deletar entidades
-- **Validação**: Regras de negócio e validações
-- **Unidade**: Testes isolados de componentes
+### Usuários Contratantes (Vinculação: 'C')
+**Características**:
+- Associados a UMA Estrutura e ZERO OU UMA Filial
+- Filial é OPCIONAL
+
+**Regras de Visibilidade**:
+1. **Se tem Estrutura E Filial**: Vê entidades da MESMA estrutura E MESMA filial
+2. **Se tem apenas Estrutura**: Vê entidades da MESMA estrutura (qualquer filial)
+3. **Se tem apenas Filial**: Vê entidades da MESMA filial (qualquer estrutura)
+4. **Se NÃO tem Estrutura nem Filial**: Visualiza TUDO
+
+**Hierarquia**: Usuário vê seu nível e todos os SUBORDINADOS
+
+### Usuários Fornecedores (Vinculação: 'F')
+**Características**:
+- Estrutura determinada pelos CONTRATOS associados
+- Deve estar vinculado a um FORNECEDOR
+- Pode estar vinculado a MÚLTIPLOS CONTRATOS do mesmo fornecedor
+- Cada usuário tem acesso EXCLUSIVO a contratos específicos
+
+**Regras de Visibilidade**:
+1. Vê APENAS terceiros dos contratos na sua hierarquia
+2. A estrutura do terceiro = estrutura do contrato
+3. Se tem múltiplos contratos, vê terceiros de TODOS eles
+
+**Hierarquia**: Usuário vê estrutura do contrato e TODAS as subordinadas
+
+### Regra de Hierarquia Universal
+- Aplica-se a TODAS as entidades associadas a Contratos
+- Exemplo: Usuário só acessa terceiros dos contratos na sua hierarquia
+- **Para TODOS os efeitos: a estrutura do terceiro É a estrutura do contrato**
+
+## 🔄 INTEGRAÇÕES E BARRAMENTO
+
+### Sistemas Externos
+- **AUT**: Sistema de Autenticação/Matrícula (Oi)
+- **NDS**: Sistema de Dados (Oi)
+- **CURE**: Sistema Complementar (Oi)
+
+### Comunicação
+- **Tipo**: Assíncrona via Barramento de Mensagens
+- **Retornos Possíveis**:
+  - **OK**: Operação realizada com sucesso
+  - **ERRO**: Falha na operação (com código parametrizado)
+  - **PENDENTE**: Aguardando processamento
+  - **RETENTATIVA**: Sistema deve reenviar
+
+### Ações de Erro Configuráveis
+- **Reenviar Evento**: Retentativa automática
+- **Efetivar Operação**: Forçar aplicação
+- **Manual**: Requer intervenção
+- **Sem Ação**: Apenas registra
+
+### Códigos de Erro Parametrizados
+- **ERR001**: Sistema Indisponível
+- **ERR002**: Dados Inválidos
+- **ERR003**: Terceiro não encontrado
+- **ERR004**: Contrato expirado
+- **ERR005**: Acesso negado por visibilidade
+- **ERR006**: Limite de tentativas excedido
+
+## 📊 FORMATOS E PADRÕES
+
+### Identificadores
+- **UUID**: Identificadores únicos (ex: 2a965b8f-8ead-4536-855a-3440ec2e2ddd)
+- **TR Code**: Código do terceiro (ex: TR000666)
+- **CPF**: XXX.XXX.XXX-XX (com máscara na exibição)
+- **CNPJ**: XX.XXX.XXX/XXXX-XX (com máscara na exibição)
+
+### Datas e Horas
+- **DateTime**: YYYYMMDDHHMMSS (ex: 20240101120000)
+- **Date**: YYYY-MM-DD (ex: 2024-01-01)
+- **Time**: HHMMSS (ex: 120000)
+- **Timezone**: UTC (Brasília = UTC-3)
+
+### Tipos de Dados Backend
+- **Tipos Numéricos**: Apenas para cálculos
+- **DateTime**: Para manipulação de datas
+- **String**: Para dados genéricos e valores não calculados
+- **Boolean**: Para valores binários (ativo/inativo)
+
+## 🧪 TIPOS DE TESTE APLICÁVEIS
+
+### 1. Teste de Integração
+**Escopo**: Comunicação entre SRT e sistemas externos (AUT, NDS, CURE)
+
+**Cenários Típicos**:
+- Envio de dados de terceiro para sistema externo
+- Recebimento de confirmação via barramento
+- Tratamento de erros e retentativas
+- Timeout e falhas de conectividade
+
+### 2. Teste de Barramento
+**Escopo**: Eventos assíncronos e processamento em background
+
+**Cenários Típicos**:
+- Evento de criação de terceiro dispara geração de matrícula
+- Retorno de sistema externo é processado corretamente
+- Notificações são enviadas ao usuário
+- Histórico de eventos é registrado
+
+### 3. Teste CRUD
+**Escopo**: Operações de Criar, Ler, Atualizar, Deletar entidades
+
+**Cenários Típicos**:
+- Criar terceiro com validações
+- Listar terceiros com filtros
+- Atualizar dados do terceiro
+- Deletar/Arquivar terceiro
+- Verificar auditoria (created_by, updated_by)
+
+### 4. Teste de Validação
+**Escopo**: Regras de negócio e constraints
+
+**Cenários Típicos**:
+- Validação de CPF/CNPJ
+- Validação de formatos de data
+- Validação de relacionamentos obrigatórios
+- Validação de situações funcionais
+- Validação de hierarquia de estruturas
+
+### 5. Teste de Visibilidade/Autorização
+**Escopo**: Controle de acesso baseado em hierarquia
+
+**Cenários Típicos**:
+- Usuário contratante vê apenas terceiros da sua estrutura
+- Usuário fornecedor vê apenas contratos vinculados
+- Usuário sem estrutura vê tudo
+- Usuário subordinado vê estrutura superior
+
+### 6. Teste Unitário
+**Escopo**: Classes individuais em isolamento
+
+**Cenários Típicos**:
+- Factory cria tipo correto de terceiro
+- Validações de negócio funcionam
+- Métodos de entidade calculam corretamente
+- Transformações de DTO funcionam
+
+## 🏗️ ARQUITETURA E PADRÕES DE DESENVOLVIMENTO
+
+### Padrão: Factory
+**Uso**: Criação de entidades polimórficas
+
+**Exemplo**: 
+- cls_factory_terceiros decide se cria Nacional ou Estrangeiro
+- Factory verifica CPF para tipo Nacional
+- Factory valida dados antes de criação
+
+### Padrão: Repository
+**Uso**: Abstração de acesso a dados
+
+**Características**:
+- Interface no domínio (int_repositorio_terceiro)
+- Implementação em infraestrutura (cls_repositorio_Terceiro)
+- Métodos: salvar, buscarPorId, listar, deletar
+- Retorna entidades do domínio, não Models
+
+### Padrão: Use Case
+**Uso**: Encapsulamento de regras de negócio
+
+**Exemplo**: uc_terceiro_store
+1. Valida entrada (DTO)
+2. Cria entidade via Factory
+3. Persiste via Repository
+4. Retorna DTO de saída
+5. Dispara eventos de negócio
+
+### Padrão: DTO (Data Transfer Object)
+**Uso**: Transferência de dados entre camadas
+
+**Convenção**:
+- **dto_in_**: Entrada de dados
+- **dto_out_**: Saída de dados
+
+### Padrão: Prototype para Visibilidade
+**Uso**: Aplicação dinâmica de regras de visibilidade
+
+**Localização**: Core\\VisibilidadeUsuario\\ProtoTypeFactory\\
+
+### Herança Polimórfica
+**Exemplo**: 
+- cls_terceiroBase (classe abstrata)
+- cls_terceiroNacional (herda de Base)
+- cls_terceiroEstrangeiro (herda de Base)
+- Validação via: parent::validar() + específica
+
+### Models Laravel
+**Convenção**:
+- Devem herdar de ModelBase quando possível
+- ModelBase já implementa created_by e updated_by
+- Fillable deve ser redeclarado em modelos filhos
+- Garante registro automático do usuário logado
+
+## 📝 VALIDAÇÕES CRÍTICAS POR ENTIDADE
+
+### Validações de Terceiro
+✅ CPF/CNPJ válido e único no sistema
+✅ Documento correspondente ao tipo (CPF=Nacional, sem CPF=Estrangeiro)
+✅ Nome preenchido e tamanho máximo
+✅ Sempre vinculado a EXATAMENTE UM fornecedor
+✅ Todos contratos do MESMO fornecedor
+✅ Relacionamentos obrigatórios preenchidos (prédio, cargo, serviço, matrícula)
+✅ Datas em formato correto
+✅ Pelo menos UM contrato ativo
+
+### Validações de Contrato
+✅ Deve ter Contratante
+✅ Deve ter Fornecedor
+✅ Data de início ≤ Data de fim
+✅ Data dentro da vigência permitida
+✅ Estrutura do terceiro = Estrutura do contrato
+
+### Validações de Situação Funcional
+✅ Tipo válido (Atividade Normal, Inativo, etc)
+✅ Data de início ≤ Data de fim
+✅ Não pode ter sobreposição com outra ativa
+✅ Motivo preenchido quando inativado
+
+## 🔍 DADOS DE TESTE PADRÃO
+
+### CPFs Fictícios Válidos
+- Nacional Ativo: 111.111.111-11
+- Nacional Inativo: 222.222.222-22
+- Nacional com Contrato: 333.333.333-33
+- Nacional com Erro: 999.999.999-99
+
+### CNPJs Fictícios Válidos
+- Fornecedor Ativo: 11.222.333/0001-81
+- Fornecedor Inativo: 11.222.333/0001-82
+- Contratante: 11.222.333/0001-83
+
+### Códigos Parametrizados
+- Tipo de Matrícula: 'Movimentação OS-BD'
+- Cargo: 'Técnico de Suporte'
+- Prestação de Serviço: 'Suporte Técnico'
+- Prédio: 'Prédio A - Recepção'
+
+### Datas Padrão
+- Data Início: 01/01/2024 (20240101)
+- Data Fim: 31/12/2024 (20241231)
+- Data Hoje: (data atual do teste)
+- Período Válido: 365 dias
+
+### Mensagens Esperadas
+- Sucesso: 'Terceiro criado com sucesso'
+- Erro CPF: 'CPF inválido ou já cadastrado'
+- Erro Contrato: 'Contrato não vigente'
+- Erro Visibilidade: 'Você não tem permissão para acessar este registro'
+- Erro Sistema: 'Erro ao comunicar com sistema externo'
+
+## ⚠️ REGRAS DE TESTE CRÍTICAS
+
+### Princípios Gerais
+1. **Isolamento**: Cada teste independente, com dados próprios
+2. **Transações**: Testes rodam em transação, revertida ao final
+3. **Ordem**: Não depender de ordem de execução
+4. **Limpeza**: Dados de teste sempre removidos
+
+### Dados de Teste
+1. **Factory Pattern**: Use builders/factories para criar dados
+2. **Massa Base**: Use DataBuild para dados compartilhados
+3. **Valores Realistas**: Use dados que simulem produção
+4. **Documentação**: Comente valores não óbvios
+
+### Mocks e Stubs
+1. **Serviços Externos**: Sempre mock (AUT, NDS, CURE)
+2. **Email**: Mock com MailHog em dev
+3. **Fila**: Queue deve ser síncrona em testes
+4. **Database**: Usar transações ou refresh
+
+### Asserções
+1. **Estado Final**: Verificar estado esperado
+2. **Efeitos Colaterais**: Verificar logs, eventos, notificações
+3. **Mensagens**: Verificar retornos corretos
+4. **Auditoria**: Verificar created_by e updated_by
+
+---
+
+## 📌 RESUMO EXECUTIVO PARA TESTES
+
+**Foco Principal**: O SRT é um sistema de VISIBILIDADE HIERÁRQUICA em que cada usuário vê diferentes dados baseado em sua estrutura organizacional.
+
+**Entidades Críticas**: Terceiro ← Contrato ← (Contratante + Fornecedor)
+
+**Regra de Ouro**: "A estrutura do terceiro É a estrutura do contrato"
+
+**Teste Essencial**: Validar visibilidade em cada operação CRUD
+
+**Integração**: Sempre testar comunicação com AUT, NDS e CURE
+
+---
 `;
 
 export async function gerarPlanoComIA(titulo: string, caInput: string): Promise<GeminiResponse> {
@@ -150,10 +492,10 @@ ${caInput}
 6. **Organize os Critérios de Aceite**
    - Numere sequencialmente: CA01, CA02, CA03...
    - Para CADA CA, crie:
-     * Título curto e descritivo
-     * Descrição COMPLETA e DETALHADA do comportamento esperado
-     * Inclua validações, mensagens, regras de negócio
-     * Seja específico sobre o que deve acontecer
+     * Título curto e descritivo (máximo 10 palavras)
+     * Descrição SIMPLES, DIRETA e OBJETIVA do comportamento esperado
+     * Máximo de 2-3 frases por descrição
+     * Foque apenas no resultado esperado, sem enumerar muitos passos
 
 ### FORMATO DE SAÍDA:
 Retorne APENAS um objeto JSON válido e completo.
@@ -176,12 +518,12 @@ ESTRUTURA OBRIGATÓRIA:
     {
       "id": "CA01",
       "title": "Título curto e objetivo do critério",
-      "descricao": "Descrição COMPLETA e DETALHADA do critério de aceite. Inclua o comportamento esperado, validações realizadas, mensagens exibidas, regras de negócio aplicadas e qualquer outra informação relevante. Seja específico sobre o que o sistema deve fazer, como deve validar e o que deve retornar. Use vírgulas e pontos para organizar as ideias em uma única linha contínua."
+      "descricao": "Descrição SIMPLES e DIRETA do comportamento esperado. Máximo 2-3 frases objetivas sobre o que deve acontecer e qual o resultado esperado."
     },
     {
       "id": "CA02",
       "title": "Outro título objetivo",
-      "descricao": "Outra descrição completa e detalhada seguindo o mesmo padrão."
+      "descricao": "Outra descrição simples e direta seguindo o mesmo padrão."
     }
   ]
 }
@@ -202,21 +544,24 @@ ESTRUTURA OBRIGATÓRIA:
 - Datas relevantes (Data Início: 01/01/2024; Data Fim: 31/12/2024)
 - Mensagens esperadas (entre aspas simples)
 
-**Descrição dos CAs** deve ser um PASSO A PASSO PRÁTICO para execução do teste:
-- Escreva instruções OBJETIVAS e EXECUTÁVEIS
-- Use linguagem imperativa: 'Abra', 'Clique', 'Preencha', 'Verifique', 'Valide'
-- Organize em passos numerados quando necessário
-- Inclua ONDE fazer a ação (tela, menu, botão específico)
-- Especifique O QUE verificar e qual RESULTADO ESPERADO
-- Mencione valores específicos a serem usados
-- Indique validações que devem ser conferidas
+**Descrição dos CAs** deve ser SIMPLES, DIRETA e OBJETIVA:
+- Máximo de 2-3 frases por CA
+- Foque no RESULTADO ESPERADO, não em passos detalhados
+- Seja específico sobre validações e mensagens importantes
+- Evite enumerar muitos passos (1, 2, 3, 4...)
+- Formato: "Ao fazer X, o sistema deve Y. Validar que Z acontece."
 
-**Exemplos de boas descrições estilo PASSO A PASSO:**
+**Exemplos de BOAS descrições SIMPLES e DIRETAS:**
+- "Ao criar usuário tipo 'C' com todos os campos obrigatórios preenchidos corretamente, o sistema deve salvar o usuário e exibir mensagem de sucesso."
+- "Ao alterar CPF de terceiro ativo, o sistema deve validar se CPF é válido e único, salvando apenas se passar nas validações."
+- "Ao tentar criar usuário sem preencher campo obrigatório 'Nome', o sistema deve exibir mensagem de erro e não permitir salvar."
+
+**Exemplos de descrições RUINS (evitar):**
 - "1. Acesse a tela de Terceiros; 2. Não selecione nenhum terceiro da lista; 3. Clique no botão 'Gerar Matrícula'; 4. Valide que o sistema exibe a mensagem 'Selecione ao menos um Terceiro' e não permite prosseguir."
-- "1. Acesse Monitor de Logs; 2. Filtre por 'Gerar Matrícula'; 3. Verifique que existe um log com Status 'Sucesso', CPF com máscara e texto 'Disponibilizado para o Sistema: AUT'; 4. Acesse a aba de Notificações; 5. Valide que a notificação foi atualizada para 'Processo Finalizado'."
+- Descrições com muitos passos numerados (evite listas longas de 1, 2, 3, 4, 5, 6, 7...)
 
 IMPORTANTE: 
-- Seja EXTREMAMENTE detalhado nas descrições
+- Seja SIMPLES e DIRETO nas descrições (máximo 2-3 frases)
 - Mantenha o contexto original dos CAs fornecidos
 - Numere os CAs sequencialmente com zero à esquerda (CA01, CA02...)
 - Retorne o JSON completo e válido
