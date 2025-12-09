@@ -155,7 +155,7 @@ const PDFViewer = () => {
             disabled={isGenerating}
             className="btn-generate"
           >
-            {isGenerating ? 'Gerando...' : '📝 Baixar DOCX'}
+            {isGenerating ? 'Gerando...' : ' Baixar Plano de Teste 📝 '}
           </button>
           <button
             onClick={handleReset}
